@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Video Downloader](VideoDownloader/logo.png)
+<img src="VideoDownloader/logo.png" alt="Video Downloader Logo" width="160" /><br/>
 
 **Modern, fast, and user-friendly video downloader for Windows**
 
