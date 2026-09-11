@@ -1,8 +1,10 @@
 ﻿# Video Downloader
 
-<div align="center">
+<p align="center">
+  <img src="VideoDownloader/logo.png" width="130" alt="Video Downloader Logo" />
+</p>
 
-<img src="VideoDownloader/logo.png" alt="Video Downloader Logo" width="160" /><br/>
+<div align="center">
 
 **Modern, fast, and user-friendly video downloader for Windows**
 
