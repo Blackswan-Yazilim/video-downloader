@@ -20,16 +20,14 @@ bundled/
 TestResults/
 *.trx
 
-# Large installer binaries & scratch
+# Packaging, installers & scratch
+packaging/
 *.msi
 _ui_v2/
 _incoming_ui/
 *.bak
-packaging/v2.0.0/Release/
-packaging/v2.0.0/Source/
+v2-webui/
 
 # OS files
 Thumbs.db
 Desktop.ini
-
-v2-webui/

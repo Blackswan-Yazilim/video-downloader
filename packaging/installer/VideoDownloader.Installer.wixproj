@@ -1,6 +1,0 @@
-<Project Sdk="WixToolset.Sdk/5.0.2">
-  <PropertyGroup>
-    <OutputName>VideoDownloader-2.0.0-Setup</OutputName>
-    <DefineConstants>PublishDir=$(MSBuildProjectDirectory)\..\v2.0.0\Release</DefineConstants>
-  </PropertyGroup>
-</Project>
