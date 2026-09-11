@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
@@ -41,7 +41,21 @@ namespace VideoDownloader
 
         private async Task InitAsync()
         {
-            await _webView.EnsureCoreWebView2Async(null);
+            try
+            {
+                var userDataFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "VideoDownloader",
+                    "WebView2"
+                );
+                Directory.CreateDirectory(userDataFolder);
+                var env = await Microsoft.Web.WebView2.Core.CoreWebView2Environment.CreateAsync(null, userDataFolder);
+                await _webView.EnsureCoreWebView2Async(env);
+            }
+            catch
+            {
+                await _webView.EnsureCoreWebView2Async(null);
+            }
             _bridge.SetWebView(_webView);
 
             _webView.CoreWebView2.DOMContentLoaded += async (s, e) =>
