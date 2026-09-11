@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,6 +20,7 @@ namespace VideoDownloader
         private readonly SettingsManager _cfg;
         private readonly LocalizationService _loc;
         private readonly List<HistoryItem> _history = new();
+        private readonly System.Threading.SemaphoreSlim _downloadLock = new(1, 1);
         private WebView2? _webView;
         private System.Windows.Forms.Form? _form;
 
@@ -223,6 +224,7 @@ namespace VideoDownloader
 
         private async Task StartDownloadAsync(string url, string path, string quality, bool subtitles)
         {
+            if (!await _downloadLock.WaitAsync(0)) return;
             try
             {
                 // Resolve to absolute path — use MyVideos as base for relative paths
@@ -264,6 +266,10 @@ namespace VideoDownloader
                         _webView?.CoreWebView2?.ExecuteScriptAsync(
                             "var al=document.getElementById('activeList');if(al&&al.children.length>0){var it=al.children[0];var st=it.querySelector('.font-label-sm');if(st){st.textContent='Error: " + ex.Message.Replace("'", "\\'").Replace("\n", " ") + "';st.classList.add('text-error')}}")));
                 UpdateHistoryStatus("failed");
+            }
+            finally
+            {
+                _downloadLock.Release();
             }
         }
 
@@ -444,3 +450,4 @@ namespace VideoDownloader
         public string Status { get; set; } = "pending";
     }
 }
+

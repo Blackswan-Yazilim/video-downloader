@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace VideoDownloader.Strategies
 {
@@ -20,20 +20,9 @@ namespace VideoDownloader.Strategies
 
         public string PreferHlsFormat(string qualityArg)
         {
-            if (qualityArg.Contains("--extract-audio", StringComparison.Ordinal))
-                return "--format \"bestaudio[protocol^=m3u8]/bestaudio/best\" " +
-                       qualityArg + " --postprocessor-args \"ExtractAudio:-threads 0\"";
-
-            const string formatPrefix = "--format ";
-            if (!qualityArg.StartsWith(formatPrefix, StringComparison.Ordinal))
-                return qualityArg;
-
-            var format = qualityArg[formatPrefix.Length..].Trim().Trim('"');
-            var hlsFormat = format.Replace("bestvideo", "bestvideo[protocol^=m3u8]")
-                .Replace("bestaudio", "bestaudio[protocol^=m3u8]")
-                .Replace("best[", "best[protocol^=m3u8][");
-
-            return $"--format \"{hlsFormat}/{format}\"";
+            // Do not force HLS protocol^=m3u8 for YouTube downloads.
+            // Native formats download significantly faster and avoid throttling or stalling.
+            return qualityArg;
         }
 
         public string GetPlatformName() => "YouTube";

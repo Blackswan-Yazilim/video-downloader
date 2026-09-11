@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
     var dict = {
         Turkish: {
             downloads: 'İndirmeler',
@@ -27,7 +27,7 @@
             mp3: 'MP3 (Yalnızca ses)',
             subtitles: 'Altyazıları indir',
             extractAudio: 'Ses parçasını çıkar',
-            best: 'En iyi kalite',
+            best: 'En İyi Kalite',
             auto: 'Otomatik',
             ultra: '4K Ultra HD',
             recommended: 'Önerilen',
@@ -37,7 +37,7 @@
             supported: 'Desteklenen Siteler',
             about: 'Hakkında',
             aboutTitle: 'Video Downloader Hakkında',
-            aboutDesc: 'YouTube, Twitter, Instagram, TikTok, Facebook, Twitch, Kick ve 50’den fazla platformdan video indirin.',
+            aboutDesc: 'YouTube, Twitter, Instagram, TikTok, Facebook, Twitch, Kick ve 50\'den fazla platformdan video indirin.',
             technologies: 'Teknolojiler:',
             developer: 'Geliştirici:',
             close: 'Kapat'
@@ -211,6 +211,10 @@
                     if (button.lastChild) button.lastChild.textContent = t('start');
                 }
             });
+
+            if (typeof window.updateQualityOptions === 'function') {
+                window.updateQualityOptions();
+            }
         }
 
         makeDeveloperLink();

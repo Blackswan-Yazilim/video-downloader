@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -153,8 +153,11 @@ namespace VideoDownloader.Services
                 startInfo.ArgumentList.Add(ffmpegPath);
             }
 
+            startInfo.ArgumentList.Add("--newline");
             startInfo.ArgumentList.Add("--continue");
             startInfo.ArgumentList.Add("--no-playlist");
+            startInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
+            startInfo.StandardErrorEncoding = System.Text.Encoding.UTF8;
 
             AddArgumentsFromString(startInfo, qualityArg);
 
@@ -269,6 +272,16 @@ namespace VideoDownloader.Services
 
             OutputReceived?.Invoke(data);
 
+            // Destination / start indication
+            if (data.Contains("[download] Destination", StringComparison.OrdinalIgnoreCase))
+            {
+                ProgressChanged?.Invoke(0.5, "Downloading");
+            }
+            else if (data.Contains("[Merger]", StringComparison.OrdinalIgnoreCase) || data.Contains("Merging formats", StringComparison.OrdinalIgnoreCase))
+            {
+                ProgressChanged?.Invoke(99.0, "Processing");
+            }
+
             // Capture last non-progress line for error reporting
             if (!data.Contains("[download]") && !data.Contains("[Extract"))
                 _lastOutputLine = data.Trim();
@@ -352,3 +365,4 @@ namespace VideoDownloader.Services
         }
     }
 }
+
