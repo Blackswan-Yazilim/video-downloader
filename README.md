@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B-blue)](https://www.microsoft.com/windows)
-[![Release](https://img.shields.io/badge/Release-v1.6.1-512BD4)](https://github.com/kayapater/video-downloader/releases)
+[![Release](https://img.shields.io/badge/Release-v1.6.2-512BD4)](https://github.com/kayapater/video-downloader/releases)
 [![Downloads](https://img.shields.io/github/downloads/kayapater/video-downloader/total?label=Downloads&color=blue)](https://github.com/kayapater/video-downloader/releases)
 
 </div>
@@ -18,33 +18,45 @@
 
 Video Downloader is a powerful and user-friendly Windows application that allows you to download videos from YouTube, Twitter, Instagram, TikTok, Facebook, and 50+ platforms.
 
-### ✨ What's New in v1.6.1
+### ✨ What's New in v1.6.2 — The Modularity Update
+
+#### 🏗️ Major Architectural Refactoring
+- **MainForm.cs reduced by 65%** (2300 → ~800 lines) by extracting:
+  - `NativeMethods` — centralized Windows P/Invoke declarations
+  - `SettingsManager` — registry-backed settings persistence
+  - `DependencyManager` — yt-dlp / FFmpeg detection, download, and installation
+  - `ThemeService` — 8-theme engine with `ThemeColors` records
+  - `LocalizationService` — in-memory translation engine with safe key fallback
+- **Dedicated UI Forms:** `AboutForm`, `SupportedSitesForm`, `SystemCheckForm`
+- **Eliminated P/Invoke duplication** across MainForm and YtDlpService
+
+#### 🔒 Security
+- **SHA256 checksum verification** for downloaded yt-dlp.exe and FFmpeg binaries
+- Hash constants declared in `DependencyVersions.cs` — set them to enable verification
+- Shared `HttpClientFactory` with proper timeout and User-Agent headers
+
+#### 🎨 UX Improvements
+- **WebP thumbnail support** via SkiaSharp — YouTube thumbnails now display correctly
+- **Quality selection modeled as enum** (`QualityOption`) — no more fragile string parsing
+- All magic numbers replaced with `AppConstants` for DPI-aware layout management
+
+#### 🐛 Bug Fixes
+- **Progress parsing fixed:** now uses `CultureInfo.InvariantCulture` — works on all locales
+- **Race condition resolved** in `YtDlpService` process disposal with lock synchronization
+- **Process timeout handling:** zombie processes now killed after metadata timeout
+- Removed unused fields in `RoundedButton`
+
+#### 📦 New Dependencies
+- `SkiaSharp` + `SkiaSharp.Views.WindowsForms` — cross-format image decoding
+- `Microsoft.Extensions.Logging` — structured logging infrastructure
+
+### 📌 Previous Highlights (v1.6.1)
 
 #### ✅ Kick URL Parsing Fix
-- Fixed argument parsing issues that could cause valid Kick VOD URLs to fail with `is not a valid URL` errors.
+- Fixed argument parsing issues that could cause valid Kick VOD URLs to fail.
 
 #### 🔧 Dependency Installation Improvements
-- Improved startup dependency flow to auto-install standalone `yt-dlp` and `FFmpeg` when missing.
-
-### 📌 Previous Highlights (v1.6.0)
-
-#### 🎯 Full Kick.com Support
-- Download Kick VODs, Clips, and Livestreams with ease.
-- Improved Cloudflare bypass using `--impersonate chrome` and updated extractor arguments.
-
-#### 🏗️ Architectural Refactoring (SOLID)
-- Migrated from a monolithic structure to a modular **Service/Strategy pattern**.
-- Codebase is now more maintainable, testable, and robust.
-
-#### 🚀 UI Stability & Performance
-- Better asynchronous process management preventing UI freezes.
-- Improved progress tracking with accurate speed and percentage reporting.
-- Smart error detection and user-friendly error messages.
-
-#### 🔧 Other Improvements
-- **Updated User-Agent** - Chrome 124 compatibility.
-- **Enhanced FFmpeg Detection** - Better handling of FFmpeg in MSIX and portable environments.
-- **Dependency Management** - Automated check and installation of `yt-dlp` on startup.
+- Improved startup dependency flow to auto-install standalone `yt-dlp` and `FFmpeg`.
 
 ---
 

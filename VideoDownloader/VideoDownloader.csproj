@@ -11,28 +11,54 @@
     
 
     <AssemblyTitle>Video Downloader</AssemblyTitle>
-    <AssemblyDescription>Advanced video downloader for YouTube, Twitter, and Instagram</AssemblyDescription>
+    <AssemblyDescription>Advanced video downloader for 50+ platforms</AssemblyDescription>
     <AssemblyCompany>kayapater</AssemblyCompany>
     <AssemblyProduct>Video Downloader</AssemblyProduct>
     <AssemblyCopyright>Copyright © 2026 kayapater</AssemblyCopyright>
-    <Version>1.6.1</Version>
-    <AssemblyVersion>1.6.1.0</AssemblyVersion>
-    <FileVersion>1.6.1.0</FileVersion>
+    <Version>1.6.2</Version>
+    <AssemblyVersion>1.6.2.0</AssemblyVersion>
+    <FileVersion>1.6.2.0</FileVersion>
     
 
     <WindowsPackageType>None</WindowsPackageType>
     <GenerateAppInstallerFile>false</GenerateAppInstallerFile>
-    <PackageCertificateKeyFile/>
+    <PackageCertificateKeyFile />
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="SkiaSharp" Version="3.116.1" />
+    <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.116.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>VideoDownloader.Tests</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="icon.ico" />
     <Content Include="logo.png" />
+    <!-- Bundled binaries — shipped with the app -->
+    <Content Include="..\bundled\yt-dlp.exe" Condition="Exists('..\bundled\yt-dlp.exe')" CopyToOutputDirectory="PreserveNewest" Link="yt-dlp.exe" Visible="false" />
+    <Content Include="..\bundled\ffmpeg.exe" Condition="Exists('..\bundled\ffmpeg.exe')" CopyToOutputDirectory="PreserveNewest" Link="ffmpeg.exe" Visible="false" />
+    <Content Include="..\bundled\ffprobe.exe" Condition="Exists('..\bundled\ffprobe.exe')" CopyToOutputDirectory="PreserveNewest" Link="ffprobe.exe" Visible="false" />
+    <Content Include="..\bundled\ffplay.exe" Condition="Exists('..\bundled\ffplay.exe')" CopyToOutputDirectory="PreserveNewest" Link="ffplay.exe" Visible="false" />
   </ItemGroup>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- Reminder: run  .\scripts\Download-BundledDeps.ps1  first        -->
+  <!-- to populate the bundled/ folder with yt-dlp.exe + FFmpeg.       -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <Target Name="CheckBundledDeps" AfterTargets="Build">
+    <Warning Condition="!Exists('$(OutputPath)yt-dlp.exe')"
+             Text="yt-dlp.exe not found in output! Run: .\scripts\Download-BundledDeps.ps1" />
+    <Warning Condition="!Exists('$(OutputPath)ffmpeg.exe')"
+             Text="FFmpeg not found in output! Run: .\scripts\Download-BundledDeps.ps1" />
+  </Target>
 
 </Project> 

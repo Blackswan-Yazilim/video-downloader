@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using VideoDownloader.Interop;
 using VideoDownloader.Models;
 using VideoDownloader.Strategies;
 
@@ -15,15 +17,16 @@ namespace VideoDownloader.Services
     public class YtDlpService
     {
         private readonly List<IPlatformStrategy> _strategies;
-        private Process _currentProcess;
+        private Process? _currentProcess;
         private bool _isCancelled;
         private bool _isPaused;
         private string _lastErrorLine = string.Empty;
+        private readonly object _processLock = new object();
         private static readonly Regex ArgumentTokenizer = new Regex("\"[^\"]*\"|\\S+", RegexOptions.Compiled);
 
-        public event Action<string> OutputReceived;
-        public event Action<double, string> ProgressChanged;
-        public event Action<bool, string> DownloadCompleted;
+        public event Action<string>? OutputReceived;
+        public event Action<double, string>? ProgressChanged;
+        public event Action<bool, string>? DownloadCompleted;
 
         public YtDlpService()
         {
@@ -35,7 +38,7 @@ namespace VideoDownloader.Services
             };
         }
 
-        public async Task<VideoMetadata> GetVideoMetadataAsync(string url, bool useStandalone, string standalonePath, CancellationToken token)
+        public async Task<VideoMetadata?> GetVideoMetadataAsync(string url, bool useStandalone, string? standalonePath, CancellationToken token)
         {
             return await Task.Run(() =>
             {
@@ -47,7 +50,7 @@ namespace VideoDownloader.Services
                     bool runStandalone = useStandalone && !string.IsNullOrEmpty(standalonePath);
                     var startInfo = new ProcessStartInfo
                     {
-                        FileName = runStandalone ? standalonePath : "python",
+                        FileName = runStandalone ? standalonePath! : "python",
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
@@ -70,7 +73,12 @@ namespace VideoDownloader.Services
                     process.Start();
 
                     var output = process.StandardOutput.ReadToEnd();
-                    process.WaitForExit(15000);
+                    if (!process.WaitForExit(AppConstants.MetadataTimeoutMs))
+                    {
+                        // Timeout — kill the process to avoid zombie
+                        try { process.Kill(entireProcessTree: true); } catch { }
+                        return null;
+                    }
 
                     if (token.IsCancellationRequested) return null;
 
@@ -83,11 +91,12 @@ namespace VideoDownloader.Services
                         if (root.TryGetProperty("thumbnails", out var thumbnails) && thumbnails.ValueKind == JsonValueKind.Array)
                         {
                             var thumbList = thumbnails.EnumerateArray().ToList();
+                            // Prefer JPG thumbnails, but accept any (including WebP — handled by SkiaSharp)
                             var jpgThumbs = thumbList.Where(t => t.TryGetProperty("url", out var u) && (u.GetString()?.Contains(".jpg") == true)).ToList();
                             if (jpgThumbs.Any()) thumbnailUrl = jpgThumbs.Last().GetProperty("url").GetString() ?? "";
                             else if (thumbList.Any()) thumbnailUrl = thumbList.Last().GetProperty("url").GetString() ?? "";
                         }
-                        
+
                         if (string.IsNullOrEmpty(thumbnailUrl) && root.TryGetProperty("thumbnail", out var thumb))
                             thumbnailUrl = thumb.GetString() ?? "";
 
@@ -103,10 +112,10 @@ namespace VideoDownloader.Services
                 }
                 catch { }
                 return null;
-            }, token);
+            }, token).ConfigureAwait(false);
         }
 
-        public async Task DownloadAsync(string url, string outputPath, string qualityArg, bool downloadSubs, bool useStandalone, string standalonePath, string ffmpegPath, bool ffmpegAvailable)
+        public async Task DownloadAsync(string url, string outputPath, string qualityArg, bool downloadSubs, bool useStandalone, string? standalonePath, string? ffmpegPath, bool ffmpegAvailable)
         {
             _isCancelled = false;
             _isPaused = false;
@@ -118,7 +127,7 @@ namespace VideoDownloader.Services
             bool runStandalone = useStandalone && !string.IsNullOrEmpty(standalonePath);
             var startInfo = new ProcessStartInfo
             {
-                FileName = runStandalone ? standalonePath : "python",
+                FileName = runStandalone ? standalonePath! : "python",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -161,23 +170,28 @@ namespace VideoDownloader.Services
             startInfo.ArgumentList.Add(Path.Combine(outputPath, "%(title)s.%(ext)s"));
             startInfo.ArgumentList.Add(url);
 
-            _currentProcess = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+            Process? processToRun = null;
+            lock (_processLock)
+            {
+                _currentProcess = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+                processToRun = _currentProcess;
+            }
 
-            _currentProcess.OutputDataReceived += (s, e) => HandleOutput(e.Data);
-            _currentProcess.ErrorDataReceived += (s, e) => HandleOutput(e.Data);
+            processToRun.OutputDataReceived += (s, e) => HandleOutput(e.Data);
+            processToRun.ErrorDataReceived += (s, e) => HandleOutput(e.Data);
 
             await Task.Run(() =>
             {
                 try
                 {
-                    _currentProcess.Start();
-                    _currentProcess.BeginOutputReadLine();
-                    _currentProcess.BeginErrorReadLine();
-                    _currentProcess.WaitForExit();
-                    
+                    processToRun.Start();
+                    processToRun.BeginOutputReadLine();
+                    processToRun.BeginErrorReadLine();
+                    processToRun.WaitForExit();
+
                     if (!_isCancelled)
                     {
-                        bool success = _currentProcess.ExitCode == 0;
+                        bool success = processToRun.ExitCode == 0;
                         string message = success
                             ? "Success"
                             : (!string.IsNullOrWhiteSpace(_lastErrorLine) ? _lastErrorLine : "Process exited with error");
@@ -186,14 +200,18 @@ namespace VideoDownloader.Services
                 }
                 catch (Exception ex)
                 {
-                    DownloadCompleted?.Invoke(false, ex.Message);
+                    if (!_isCancelled)
+                        DownloadCompleted?.Invoke(false, ex.Message);
                 }
                 finally
                 {
-                    _currentProcess?.Dispose();
-                    _currentProcess = null;
+                    lock (_processLock)
+                    {
+                        try { _currentProcess?.Dispose(); } catch { }
+                        _currentProcess = null;
+                    }
                 }
-            });
+            }).ConfigureAwait(false);
         }
 
         private static void AddArgumentsFromString(ProcessStartInfo startInfo, string arguments)
@@ -215,7 +233,7 @@ namespace VideoDownloader.Services
             }
         }
 
-        private void HandleOutput(string data)
+        private void HandleOutput(string? data)
         {
             if (string.IsNullOrEmpty(data) || _isCancelled) return;
 
@@ -226,22 +244,16 @@ namespace VideoDownloader.Services
                 _lastErrorLine = data.Trim();
             }
 
-            // Progress parsing logic (simplified version of what's in MainForm)
-            if (data.Contains("[download]") && data.Contains("%"))
+            // Progress parsing — use InvariantCulture to handle both '.' and ',' decimal separators
+            if (data.Contains("[download]") && data.Contains('%'))
             {
                 try
                 {
-                    var parts = data.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var part in parts)
+                    var match = Regex.Match(data, @"(\d+\.?\d*)\s*%");
+                    if (match.Success &&
+                        double.TryParse(match.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out double progress))
                     {
-                        if (part.Contains("%"))
-                        {
-                            if (double.TryParse(part.TrimEnd('%').Replace('.', ','), out double progress))
-                            {
-                                ProgressChanged?.Invoke(progress, "Downloading");
-                                break;
-                            }
-                        }
+                        ProgressChanged?.Invoke(progress, "Downloading");
                     }
                 }
                 catch { }
@@ -251,79 +263,33 @@ namespace VideoDownloader.Services
         public void Cancel()
         {
             _isCancelled = true;
-            KillProcessTree(_currentProcess?.Id ?? 0);
+            int pid;
+            lock (_processLock)
+            {
+                pid = _currentProcess?.Id ?? 0;
+            }
+            NativeMethods.KillProcessTree(pid);
         }
 
         public void PauseResume()
         {
-            if (_currentProcess == null) return;
+            int pid;
+            lock (_processLock)
+            {
+                if (_currentProcess == null) return;
+                pid = _currentProcess.Id;
+            }
 
             if (_isPaused)
             {
-                ResumeProcess(_currentProcess.Id);
+                NativeMethods.ResumeProcess(pid);
                 _isPaused = false;
             }
             else
             {
-                PauseProcess(_currentProcess.Id);
+                NativeMethods.PauseProcess(pid);
                 _isPaused = true;
             }
-        }
-
-        // Windows specific process control (should be moved to a native helper or kept here for simplicity)
-        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-        static extern IntPtr OpenThread(uint dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
-        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-        static extern uint SuspendThread(IntPtr hThread);
-        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-        static extern int ResumeThread(IntPtr hThread);
-        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-        static extern bool CloseHandle(IntPtr hHandle);
-
-        private void PauseProcess(int pid)
-        {
-            try {
-                var process = Process.GetProcessById(pid);
-                foreach (ProcessThread thread in process.Threads)
-                {
-                    var pOpenThread = OpenThread(0x0002, false, (uint)thread.Id);
-                    if (pOpenThread != IntPtr.Zero)
-                    {
-                        SuspendThread(pOpenThread);
-                        CloseHandle(pOpenThread);
-                    }
-                }
-            } catch { }
-        }
-
-        private void ResumeProcess(int pid)
-        {
-            try {
-                var process = Process.GetProcessById(pid);
-                foreach (ProcessThread thread in process.Threads)
-                {
-                    var pOpenThread = OpenThread(0x0002, false, (uint)thread.Id);
-                    if (pOpenThread != IntPtr.Zero)
-                    {
-                        ResumeThread(pOpenThread);
-                        CloseHandle(pOpenThread);
-                    }
-                }
-            } catch { }
-        }
-
-        private void KillProcessTree(int pid)
-        {
-            if (pid == 0) return;
-            try {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "taskkill",
-                    Arguments = $"/T /F /PID {pid}",
-                    CreateNoWindow = true,
-                    UseShellExecute = false
-                })?.WaitForExit();
-            } catch { }
         }
     }
 }

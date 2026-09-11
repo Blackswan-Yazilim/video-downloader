@@ -1,0 +1,29 @@
+# Build output
+bin/
+obj/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+bundled/
+
+# VS Code
+.vs/
+.vscode/
+
+# NuGet
+*.nupkg
+**/packages/
+
+# Test results
+TestResults/
+*.trx
+
+# Temp / incoming files
+_incoming_ui/
+*.bak
+
+# OS files
+Thumbs.db
+Desktop.ini
