@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html class="dark" lang="en" data-theme="dark"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<title>Video Downloader - Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Geist:wght@500&family=Hanken+Grotesk:wght@600;700&display=block"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Geist:wght@500&family=Hanken+Grotesk:wght@600;700&display=block" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-primary-container":"#00422b","primary-container":"#10b981","secondary":"#68dba9","error":"#ffb4ab","surface-tint":"#4edea3","surface-container-highest":"#333537","outline-variant":"#3c4a42","primary-fixed":"#6ffbbe","primary":"#4edea3","tertiary-container":"#fc7c78","surface":"#121416","inverse-primary":"#006c49","surface-container-low":"#1a1c1e","inverse-surface":"#e2e2e5","inverse-on-surface":"#2f3033","error-container":"#93000a","on-background":"#e2e2e5","primary-fixed-dim":"#4edea3","surface-dim":"#121416","surface-bright":"#38393c","outline":"#86948a","on-surface":"#e2e2e5","surface-container-high":"#282a2c","background":"#121416","surface-container":"#1e2022","on-surface-variant":"#bbcabf","surface-variant":"#333537","surface-container-lowest":"#0c0e10","secondary-container":"#25a475"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"padding-card":"20px","container-margin":"24px",gutter:"16px","unit":"4px","stack-gap":"8px","padding-input":"12px 16px"},fontFamily:{"body-lg":["Inter"],"label-md":["Geist"],"headline-md":["Hanken Grotesk"],"title-lg":["Inter"],"headline-lg":["Hanken Grotesk"],"body-md":["Inter"],"label-sm":["Geist"]},fontSize:{"body-lg":["16px",{lineHeight:"24px",fontWeight:"400"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"500"}],"headline-md":["24px",{lineHeight:"32px",fontWeight:"600"}],"title-lg":["18px",{lineHeight:"24px",fontWeight:"600"}],"headline-lg":["32px",{lineHeight:"40px",letterSpacing:"-0.01em",fontWeight:"600"}],"body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.05em",fontWeight:"500"}]}}}}
+</script>
+<style>
+/* Base */
+body{background-color:#0A0C0E;color:#e2e2e5;font-family:'Inter',sans-serif}
+.glass-panel{background:rgba(20,24,26,0.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(34,40,42,0.8)}
+.gradient-btn{background:linear-gradient(180deg,#10B981 0%,#059669 100%)}
+.gradient-btn:hover{background:linear-gradient(180deg,#34d399 0%,#10B981 100%)}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+
+/* Toggle Switch - smooth animation */
+.toggle-track{width:48px;height:24px;border-radius:12px;background:#1A1E20;border:1px solid #22282A;cursor:pointer;position:relative;transition:background .3s,border-color .3s}
+.toggle-track.on{background:#10B981;border-color:#10B981}
+.toggle-knob{width:18px;height:18px;border-radius:50%;background:#86948a;position:absolute;top:2px;left:2px;transition:left .3s,background .3s}
+.toggle-track.on .toggle-knob{left:26px;background:#fff}
+
+/* Light theme */
+[data-theme="light"] body{background-color:#F5F5F5;color:#1a1a1a}
+[data-theme="light"] .glass-panel{background:rgba(255,255,255,0.85);border:1px solid rgba(0,0,0,0.1)}
+[data-theme="light"] .bg-surface-container{background:#fff!important;border-color:#e0e0e0!important}
+[data-theme="light"] .bg-surface-container-low{background:#fff!important;border-color:#e0e0e0!important}
+[data-theme="light"] .bg-surface-container-lowest{background:#f0f0f0!important;border-color:#e0e0e0!important}
+[data-theme="light"] .bg-background{background:#F5F5F5!important}
+[data-theme="light"] .bg-\[\#1A1E20\]{background:#fff!important;border-color:#d0d0d0!important}
+[data-theme="light"] .bg-\[\#14181A\]{background:#fafafa!important;border-color:#e0e0e0!important}
+[data-theme="light"] .border-outline-variant{border-color:#d0d0d0!important}
+[data-theme="light"] .border-\[\#22282A\]{border-color:#d0d0d0!important}
+[data-theme="light"] .text-on-surface{color:#1a1a1a!important}
+[data-theme="light"] .text-on-surface-variant{color:#555!important}
+[data-theme="light"] .text-on-background{color:#1a1a1a!important}
+[data-theme="light"] .text-outline{color:#777!important}
+[data-theme="light"] input[type="text"], [data-theme="light"] select{color:#1a1a1a!important}
+[data-theme="light"] input[type="text"]::placeholder{color:#999!important}
+[data-theme="light"] .border-t{border-color:#e0e0e0!important}
+[data-theme="light"] .border-\[\#3c4a42\]{border-color:#e0e0e0!important}
+
+/* High Contrast theme */
+[data-theme="highcontrast"] body{background-color:#000;color:#fff}
+[data-theme="highcontrast"] .glass-panel{background:rgba(0,0,0,0.9);border:1px solid #fff}
+[data-theme="highcontrast"] .bg-surface-container{background:#000!important;border-color:#fff!important}
+[data-theme="highcontrast"] .bg-surface-container-low{background:#000!important;border-color:#fff!important}
+[data-theme="highcontrast"] .bg-surface-container-lowest{background:#000!important;border-color:#fff!important}
+[data-theme="highcontrast"] .bg-background{background:#000!important}
+[data-theme="highcontrast"] .bg-\[\#1A1E20\]{background:#111!important;border-color:#fff!important}
+[data-theme="highcontrast"] .bg-\[\#14181A\]{background:#000!important;border-color:#fff!important}
+[data-theme="highcontrast"] .border-outline-variant{border-color:#fff!important}
+[data-theme="highcontrast"] .border-\[\#22282A\]{border-color:#fff!important}
+[data-theme="highcontrast"] .text-on-surface{color:#fff!important}
+[data-theme="highcontrast"] .text-on-surface-variant{color:#ddd!important}
+[data-theme="highcontrast"] .text-on-background{color:#fff!important}
+</style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden antialiased">
+<div class="flex flex-1 overflow-hidden">
+<aside class="hidden md:flex fixed left-0 top-0 bottom-8 flex-col py-4 px-2 bg-surface-container border-r border-outline-variant h-[calc(100vh-32px)] w-[240px] z-40">
+<div class="px-4 mb-8">
+<div class="flex items-center gap-3 mb-3"><img src="logo.png" class="w-9 h-9 rounded-lg object-cover" alt="Logo" onerror="this.style.display='none'"/><div class="font-title-lg text-title-lg text-primary">Video Downloader</div></div>
+<div class="text-on-surface-variant font-label-sm text-label-sm mt-1">v2.0</div>
+</div>
+<nav class="flex-1 space-y-2 px-2">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-colors" href="download.html"><span class="material-symbols-outlined">download</span><span data-i18n="downloads">Downloads</span></a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant rounded-lg font-label-md text-label-md transition-colors" href="history.html"><span class="material-symbols-outlined">check_circle</span><span data-i18n="completed">Completed</span></a>
+</nav>
+<div class="mt-auto px-2 pb-4">
+<a class="flex items-center gap-3 px-3 py-2 bg-primary-container text-on-primary-container rounded-lg border-l-2 border-primary font-label-md text-label-md opacity-80 transition-all scale-95 duration-150" href="settings.html"><span class="material-symbols-outlined">settings</span><span data-i18n="settings">Settings</span></a>
+</div>
+</aside>
+<main class="flex-1 md:ml-[240px] p-container-margin overflow-y-auto bg-background pb-16">
+<div class="max-w-4xl mx-auto space-y-8">
+<header class="mb-8"><h2 class="font-headline-lg text-headline-lg text-on-surface" data-i18n="settingsTitle">Settings</h2><p class="font-body-md text-body-md text-on-surface-variant mt-2" data-i18n="settingsSub">Manage your preferences and application behavior.</p></header>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+
+<section class="bg-surface-container-low rounded-xl border border-outline-variant p-padding-card flex flex-col gap-stack-gap">
+<div class="flex items-center gap-3 mb-4"><span class="material-symbols-outlined text-primary">tune</span><h3 class="font-title-lg text-title-lg text-on-background" data-i18n="general">General</h3></div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" data-i18n="language">Language</label>
+<div class="relative">
+<select id="langSelect" class="w-full bg-[#1A1E20] border border-[#22282A] text-on-background rounded-lg p-padding-input appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all font-body-md" onchange="onLangChange(this.value)"><option value="Turkish">Turkish</option><option value="English">English</option></select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-4 py-2 border-t border-[#22282A]">
+<div><span class="font-body-md text-body-md text-on-background block" data-i18n="launchStartup">Launch on Startup</span><span class="font-label-sm text-label-sm text-on-surface-variant" data-i18n="launchStartupDesc">Start app automatically when system boots</span></div>
+<div class="toggle-track" id="startupToggle" onclick="toggleSwitch('startupToggle')"><div class="toggle-knob"></div></div>
+</div>
+</section>
+
+<section class="bg-surface-container-low rounded-xl border border-outline-variant p-padding-card flex flex-col gap-stack-gap">
+<div class="flex items-center gap-3 mb-4"><span class="material-symbols-outlined text-primary">cloud_download</span><h3 class="font-title-lg text-title-lg text-on-background" data-i18n="download">Download</h3></div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" data-i18n="defaultPath">Default Path</label>
+<div class="flex gap-2"><input id="defaultPathInput" class="flex-1 bg-[#1A1E20] border border-[#22282A] text-on-background rounded-lg p-padding-input focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all font-body-md font-mono text-sm" readonly type="text" value="" data-default="Videos\Video Downloader"/><button class="bg-[#1A1E20] border border-[#22282A] hover:bg-surface-variant text-on-surface transition-colors rounded-lg px-4 flex items-center justify-center" onclick="pickFolder()"><span class="material-symbols-outlined">folder_open</span></button></div>
+</div>
+<div class="flex flex-col gap-2 mt-4"><label class="font-label-md text-label-md text-on-surface-variant flex justify-between"><span data-i18n="maxConcurrent">Max Concurrent Downloads</span><span class="text-primary" id="concurrent-val">3</span></label><input class="w-full h-2 bg-[#1A1E20] rounded-lg appearance-none cursor-pointer accent-primary" max="10" min="1" oninput="document.getElementById('concurrent-val').innerText=this.value" type="range" value="3"/><div class="flex justify-between text-xs text-on-surface-variant px-1"><span>1</span><span>10</span></div></div>
+</section>
+
+<section class="bg-surface-container-low rounded-xl border border-outline-variant p-padding-card flex flex-col gap-stack-gap lg:col-span-2">
+<div class="flex items-center gap-3 mb-4"><span class="material-symbols-outlined text-primary">palette</span><h3 class="font-title-lg text-title-lg text-on-background" data-i18n="appearance">Appearance</h3></div>
+<div class="flex flex-col gap-4">
+<label class="font-label-md text-label-md text-on-surface-variant" data-i18n="theme">Theme</label>
+<div class="grid grid-cols-3 gap-3">
+<button id="themeDark" class="flex flex-col items-center gap-2 p-3 rounded-lg border border-primary bg-primary/10 transition-all" onclick="selectTheme('dark')"><div class="w-full h-16 rounded-md bg-[#121416] border border-[#22282A] flex flex-col gap-1 p-2"><div class="w-full h-2 bg-[#1A1E20] rounded-sm"></div><div class="w-1/2 h-2 bg-primary rounded-sm"></div></div><span class="font-label-sm text-label-sm text-primary" data-i18n="dark">Dark</span></button>
+<button id="themeLight" class="flex flex-col items-center gap-2 p-3 rounded-lg border border-[#22282A] hover:bg-[#1A1E20] transition-all" onclick="selectTheme('light')"><div class="w-full h-16 rounded-md bg-white border border-gray-200 flex flex-col gap-1 p-2"><div class="w-full h-2 bg-gray-100 rounded-sm"></div><div class="w-1/2 h-2 bg-gray-300 rounded-sm"></div></div><span class="font-label-sm text-label-sm text-on-surface-variant" data-i18n="light">Light</span></button>
+<button id="themeContrast" class="flex flex-col items-center gap-2 p-3 rounded-lg border border-[#22282A] hover:bg-[#1A1E20] transition-all" onclick="selectTheme('highcontrast')"><div class="w-full h-16 rounded-md bg-black border border-gray-800 flex flex-col gap-1 p-2"><div class="w-full h-2 bg-gray-900 rounded-sm border border-gray-700"></div><div class="w-1/2 h-2 bg-white rounded-sm"></div></div><span class="font-label-sm text-label-sm text-on-surface-variant" data-i18n="highContrast">High Contrast</span></button>
+</div>
+</div>
+</section>
+
+<div class="col-span-1 lg:col-span-2 flex justify-end gap-4 mt-4 pb-8">
+<button class="px-6 py-2 rounded-xl border border-[#22282A] text-primary hover:bg-[#1A1E20] transition-colors font-label-md text-label-md" onclick="resetDefaults()" data-i18n="resetDefaults">Reset Defaults</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<footer class="fixed bottom-0 left-0 w-full z-50 flex items-center justify-between px-container-margin h-8 bg-surface-container-lowest border-t border-outline-variant md:ml-[240px] md:w-[calc(100%-240px)]">
+<a href="https://kayapater.dev" target="_blank" class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors cursor-pointer">kayapater</a>
+<div class="flex gap-4 font-label-sm text-label-sm text-secondary">
+<a class="text-primary cursor-pointer hover:text-primary transition-colors" href="#" onclick="showAbout()" data-i18n="about">About</a>
+<a class="text-on-surface-variant cursor-pointer hover:text-primary transition-colors" href="#" onclick="showSupported()" data-i18n="supportedSites">Supported Sites</a>
+</div>
+</footer>
+<div id="aboutModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] hidden" onclick="closeAbout()"><div class="bg-surface-container-low border border-outline-variant rounded-xl p-8 max-w-md w-full mx-4" onclick="event.stopPropagation()"><h3 class="font-title-lg text-title-lg text-on-surface mb-4" data-i18n="aboutTitle">About Video Downloader</h3><p class="font-body-md text-body-md text-on-surface-variant mb-4" data-i18n="aboutDesc"></p><p class="font-body-md text-body-md text-on-surface-variant mb-1"><strong data-i18n="technologies">Technologies:</strong> .NET 8.0, yt-dlp, FFmpeg, WebView2</p><p class="font-body-md text-body-md text-on-surface-variant mb-4"><strong data-i18n="developer">Developer:</strong> <a href="https://kayapater.dev" target="_blank" class="text-primary hover:underline font-medium cursor-pointer">kayapater</a></p><button class="gradient-btn text-[#0A0C0E] w-full py-2.5 rounded-lg font-label-md text-label-md" onclick="closeAbout()" data-i18n="close">Close</button></div></div>
+<div id="sitesModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] hidden" onclick="closeSites()"><div class="bg-surface-container-low border border-outline-variant rounded-xl p-8 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()"><h3 class="font-title-lg text-title-lg text-on-surface mb-4" data-i18n="supportedSitesTitle">Supported Sites</h3><div class="font-body-md text-body-md text-on-surface-variant space-y-1" data-i18n-html="supportedSitesList"></div><button class="gradient-btn text-[#0A0C0E] w-full py-2.5 rounded-lg font-label-md text-label-md mt-4" onclick="closeSites()" data-i18n="close">Close</button></div></div>
+<script>
+var savedLang=localStorage.getItem('vdlang');
+var lang=savedLang||'Turkish';
+var D={};
+D.English={downloads:"Downloads",completed:"Completed",settings:"Settings",about:"About",supportedSites:"Supported Sites",aboutTitle:"About Video Downloader",aboutDesc:"Download videos from YouTube, Twitter, Instagram, TikTok, Facebook, Twitch, Kick and 50+ other platforms.",technologies:"Technologies:",developer:"Developer:",close:"Close",supportedSitesTitle:"Supported Sites",supportedSitesList:'<p>📺 <b>Main:</b> YouTube, Instagram, TikTok, Twitter/X, Facebook, Twitch, Vimeo, Dailymotion, Reddit, LinkedIn</p><p>🎵 <b>Music:</b> SoundCloud, Bandcamp, Mixcloud</p><p>📚 <b>Education:</b> Udemy, Coursera, Khan Academy</p><p>🌏 <b>International:</b> Bilibili, Niconico, VK</p><p class="pt-2 text-outline">And 1000+ more sites supported by yt-dlp</p>',settingsTitle:"Settings",settingsSub:"Manage your preferences and application behavior.",general:"General",language:"Language",launchStartup:"Launch on Startup",launchStartupDesc:"Start app automatically when system boots",download:"Download",defaultPath:"Default Path",maxConcurrent:"Max Concurrent Downloads",appearance:"Appearance",theme:"Theme",dark:"Dark",light:"Light",highContrast:"High Contrast",resetDefaults:"Reset Defaults",saveChanges:"Save Changes",settingsSaved:"Settings saved!",pathPrompt:"Download path:"};
+D.Turkish={downloads:"\u0130ndirmeler",completed:"Tamamlanan",settings:"Ayarlar",about:"Hakk\u0131nda",supportedSites:"Desteklenen Siteler",aboutTitle:"Video Downloader Hakk\u0131nda",aboutDesc:"YouTube, Twitter, Instagram, TikTok, Facebook, Twitch, Kick ve 50'den fazla platformdan video indirin.",technologies:"Teknolojiler:",developer:"Geli\u015ftirici:",close:"Kapat",supportedSitesTitle:"Desteklenen Siteler",supportedSitesList:'<p>📺 <b>Ana:</b> YouTube, Instagram, TikTok, Twitter/X, Facebook, Twitch, Vimeo, Dailymotion, Reddit, LinkedIn</p><p>🎵 <b>M\u00fczik:</b> SoundCloud, Bandcamp, Mixcloud</p><p>📚 <b>E\u011fitim:</b> Udemy, Coursera, Khan Academy</p><p>🌏 <b>Uluslararas\u0131:</b> Bilibili, Niconico, VK</p><p class="pt-2 text-outline">Ve yt-dlp taraf\u0131ndan desteklenen 1000+ site</p>',settingsTitle:"Ayarlar",settingsSub:"Tercihlerinizi ve uygulama davran\u0131\u015f\u0131n\u0131 y\u00f6netin.",general:"Genel",language:"Dil",launchStartup:"Ba\u015flang\u0131\u00e7ta A\u00e7",launchStartupDesc:"Sistem a\u00e7\u0131ld\u0131\u011f\u0131nda uygulamay\u0131 otomatik ba\u015flat",download:"\u0130ndirme",defaultPath:"Varsay\u0131lan Konum",maxConcurrent:"Maks E\u015fzamanl\u0131 \u0130ndirme",appearance:"G\u00f6r\u00fcn\u00fcm",theme:"Tema",dark:"Koyu",light:"A\u00e7\u0131k",highContrast:"Y\u00fcksek Kontrast",resetDefaults:"Varsay\u0131lanlara D\u00f6n",saveChanges:"De\u011fi\u015fiklikleri Kaydet",settingsSaved:"Ayarlar kaydedildi!",pathPrompt:"\u0130ndirme konumu:"};
+function t(k){return D[lang][k]||k}
+function applyI18n(){document.querySelectorAll('[data-i18n]').forEach(function(el){var v=D[lang][el.getAttribute('data-i18n')];if(v!==undefined)el.textContent=v});document.querySelectorAll('[data-i18n-html]').forEach(function(el){var v=D[lang][el.getAttribute('data-i18n-html')];if(v!==undefined)el.innerHTML=v})}
+function setLang(l){lang=l;localStorage.setItem('vdlang',l);applyI18n();document.getElementById('langSelect').value=l;call('save-setting','language',l)}
+function onLangChange(v){setLang(v)}
+function call(m){var a=Array.prototype.slice.call(arguments,1);var u='http://bridge.local/'+m;if(a.length>0)u+='/'+encodeURIComponent(JSON.stringify(a));window.location.href=u}
+function loadSettings(){call('get-settings')}
+function showAbout(){document.getElementById('aboutModal').classList.remove('hidden')}
+function closeAbout(){document.getElementById('aboutModal').classList.add('hidden')}
+function showSupported(){document.getElementById('sitesModal').classList.remove('hidden')}
+function closeSites(){document.getElementById('sitesModal').classList.add('hidden')}
+function pickFolder(){window.location.href='http://bridge.local/pick-folder'}
+
+// ── Toggle Switch ──
+function toggleSwitch(id){var el=document.getElementById(id);el.classList.toggle('on')}
+
+// ── Theme ──
+var savedTheme=localStorage.getItem('vdtheme')||'dark';
+function applyTheme(th){savedTheme=th;localStorage.setItem('vdtheme',th);document.documentElement.setAttribute('data-theme',th);
+document.querySelectorAll('#themeDark,#themeLight,#themeContrast').forEach(function(b){b.classList.remove('border-primary','bg-primary/10');b.querySelector('span:last-child').classList.remove('text-primary');b.querySelector('span:last-child').classList.add('text-on-surface-variant')});
+var btn=th==='dark'?document.getElementById('themeDark'):th==='light'?document.getElementById('themeLight'):document.getElementById('themeContrast');
+btn.classList.add('border-primary','bg-primary/10');btn.querySelector('span:last-child').classList.add('text-primary');btn.querySelector('span:last-child').classList.remove('text-on-surface-variant');
+call('save-setting','theme',th)}
+function selectTheme(th){applyTheme(th)}
+function resetDefaults(){document.getElementById('langSelect').value='English';setLang('English');document.getElementById('defaultPathInput').value=document.getElementById('defaultPathInput').getAttribute('data-default');applyTheme('dark')}
+
+applyTheme(savedTheme);
+// Set default path to user's Videos folder
+try{var dp=document.getElementById('defaultPathInput');if(dp&&!dp.value)dp.value=dp.getAttribute('data-default')||'Videos\\Video Downloader'}catch(e){}
+window.chrome.webview.addEventListener('message',function(e){try{var m=JSON.parse(e.data);if(m.type==='settings-data'){if(m.data.language)setLang(m.data.language);if(m.data.theme)applyTheme(m.data.theme)}}catch(e){}});
+applyI18n();
+document.getElementById('langSelect').value=lang;
+if(!savedLang){loadSettings()}
+</script>
+</body></html>

@@ -21,6 +21,7 @@ namespace VideoDownloader.Services
         private bool _isCancelled;
         private bool _isPaused;
         private string _lastErrorLine = string.Empty;
+        private string _lastOutputLine = string.Empty;
         private readonly object _processLock = new object();
         private static readonly Regex ArgumentTokenizer = new Regex("\"[^\"]*\"|\\S+", RegexOptions.Compiled);
 
@@ -32,6 +33,7 @@ namespace VideoDownloader.Services
         {
             _strategies = new List<IPlatformStrategy>
             {
+                new YoutubeStrategy(),
                 new KickStrategy(),
                 new TwitchStrategy(),
                 new DefaultStrategy()
@@ -115,14 +117,17 @@ namespace VideoDownloader.Services
             }, token).ConfigureAwait(false);
         }
 
-        public async Task DownloadAsync(string url, string outputPath, string qualityArg, bool downloadSubs, bool useStandalone, string? standalonePath, string? ffmpegPath, bool ffmpegAvailable)
+        public async Task<bool> DownloadAsync(string url, string outputPath, string qualityArg, bool downloadSubs, bool useStandalone, string? standalonePath, string? ffmpegPath, bool ffmpegAvailable)
         {
             _isCancelled = false;
             _isPaused = false;
             _lastErrorLine = string.Empty;
+            _lastOutputLine = string.Empty;
 
             var strategy = _strategies.FirstOrDefault(s => s.CanHandle(url)) ?? new DefaultStrategy();
             string extraArgs = strategy.GetExtraArguments(url);
+            if (strategy is YoutubeStrategy youtubeStrategy)
+                qualityArg = youtubeStrategy.PreferHlsFormat(qualityArg);
 
             bool runStandalone = useStandalone && !string.IsNullOrEmpty(standalonePath);
             var startInfo = new ProcessStartInfo
@@ -180,7 +185,7 @@ namespace VideoDownloader.Services
             processToRun.OutputDataReceived += (s, e) => HandleOutput(e.Data);
             processToRun.ErrorDataReceived += (s, e) => HandleOutput(e.Data);
 
-            await Task.Run(() =>
+            return await Task.Run(() =>
             {
                 try
                 {
@@ -191,17 +196,42 @@ namespace VideoDownloader.Services
 
                     if (!_isCancelled)
                     {
-                        bool success = processToRun.ExitCode == 0;
-                        string message = success
-                            ? "Success"
-                            : (!string.IsNullOrWhiteSpace(_lastErrorLine) ? _lastErrorLine : "Process exited with error");
+                        // Check for errors even when exit code is 0 (yt-dlp sometimes exits 0 on recoverable errors)
+                        bool hasErrorLine = !string.IsNullOrWhiteSpace(_lastErrorLine);
+                        // DPAPI/cookie warnings are non-fatal — yt-dlp falls back to other methods
+                        bool isSoftWarning = hasErrorLine &&
+                            (_lastErrorLine.Contains("DPAPI", StringComparison.OrdinalIgnoreCase) ||
+                             _lastErrorLine.Contains("cookies", StringComparison.OrdinalIgnoreCase) ||
+                             _lastErrorLine.Contains("cookie", StringComparison.OrdinalIgnoreCase));
+                        bool isBotDetect = hasErrorLine && !isSoftWarning &&
+                            (_lastErrorLine.Contains("Sign in to confirm", StringComparison.OrdinalIgnoreCase) ||
+                             _lastErrorLine.Contains("bot", StringComparison.OrdinalIgnoreCase));
+                        bool hasRealError = hasErrorLine && !isSoftWarning;
+                        bool success = processToRun.ExitCode == 0 && !hasRealError;
+
+                        string message;
+                        if (success)
+                            message = "Success";
+                        else if (isBotDetect)
+                            message = "YouTube bot detected — try with cookies";
+                        else if (hasRealError)
+                            message = _lastErrorLine;
+                        else if (!string.IsNullOrWhiteSpace(_lastOutputLine))
+                            message = _lastOutputLine;
+                        else
+                            message = "Process exited with error";
+
                         DownloadCompleted?.Invoke(success, message);
+                        return success;
                     }
+
+                    return false;
                 }
                 catch (Exception ex)
                 {
                     if (!_isCancelled)
                         DownloadCompleted?.Invoke(false, ex.Message);
+                    return false;
                 }
                 finally
                 {
@@ -239,13 +269,42 @@ namespace VideoDownloader.Services
 
             OutputReceived?.Invoke(data);
 
+            // Capture last non-progress line for error reporting
+            if (!data.Contains("[download]") && !data.Contains("[Extract"))
+                _lastOutputLine = data.Trim();
+
             if (data.Contains("ERROR:", StringComparison.OrdinalIgnoreCase))
             {
                 _lastErrorLine = data.Trim();
             }
 
-            // Progress parsing — use InvariantCulture to handle both '.' and ',' decimal separators
+            // Progress parsing — extract percentage + ETA/speed
             if (data.Contains("[download]") && data.Contains('%'))
+            {
+                try
+                {
+                    var match = Regex.Match(data, @"(\d+\.?\d*)\s*%");
+                    if (match.Success &&
+                        double.TryParse(match.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out double progress))
+                    {
+                        // Extract ETA or speed for better status display
+                        string status = "Downloading";
+                        var etaMatch = Regex.Match(data, @"ETA\s+(\S+)");
+                        if (etaMatch.Success)
+                            status = "ETA " + etaMatch.Groups[1].Value;
+                        else
+                        {
+                            var speedMatch = Regex.Match(data, @"at\s+(\S+)");
+                            if (speedMatch.Success)
+                                status = speedMatch.Groups[1].Value + "/s";
+                        }
+                        ProgressChanged?.Invoke(progress, status);
+                    }
+                }
+                catch { }
+            }
+            // Also catch "Downloading" lines without [download] prefix (some extractors)
+            else if (data.Contains('%') && (data.Contains("of") || data.Contains("MiB") || data.Contains("GiB") || data.Contains("KiB")))
             {
                 try
                 {

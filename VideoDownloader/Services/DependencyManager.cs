@@ -74,14 +74,14 @@ namespace VideoDownloader.Services
         {
             string? path = null;
 
-            var managedPath = GetManagedYtDlpPath();
-            if (File.Exists(managedPath))
-                path = managedPath;
+            var appDirPath = Path.Combine(AppContext.BaseDirectory, "yt-dlp.exe");
+            if (File.Exists(appDirPath))
+                path = appDirPath;
             else
             {
-                var appDirPath = Path.Combine(AppContext.BaseDirectory, "yt-dlp.exe");
-                if (File.Exists(appDirPath))
-                    path = appDirPath;
+                var managedPath = GetManagedYtDlpPath();
+                if (File.Exists(managedPath))
+                    path = managedPath;
             }
 
             if (path == null)

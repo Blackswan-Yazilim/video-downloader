@@ -1,4 +1,4 @@
-# Build output
+﻿# Build output
 bin/
 obj/
 *.suo
@@ -20,10 +20,16 @@ bundled/
 TestResults/
 *.trx
 
-# Temp / incoming files
+# Large installer binaries & scratch
+*.msi
+_ui_v2/
 _incoming_ui/
 *.bak
+packaging/v2.0.0/Release/
+packaging/v2.0.0/Source/
 
 # OS files
 Thumbs.db
 Desktop.ini
+
+v2-webui/
