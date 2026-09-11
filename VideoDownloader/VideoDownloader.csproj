@@ -33,16 +33,6 @@
     <Content Include="icon.ico" />
     <Content Include="logo.png" />
     <Content Include="wwwroot\**" CopyToOutputDirectory="PreserveNewest" />
-    <!-- Bundled binaries - shipped with the app -->
-    <Content Include="..\bundled\yt-dlp.exe" Condition="Exists('..\bundled\yt-dlp.exe')" CopyToOutputDirectory="PreserveNewest" Link="yt-dlp.exe" Visible="false" />
-    <Content Include="..\bundled\ffmpeg.exe" Condition="Exists('..\bundled\ffmpeg.exe')" CopyToOutputDirectory="PreserveNewest" Link="ffmpeg.exe" Visible="false" />
-    <Content Include="..\bundled\ffprobe.exe" Condition="Exists('..\bundled\ffprobe.exe')" CopyToOutputDirectory="PreserveNewest" Link="ffprobe.exe" Visible="false" />
-    <Content Include="..\bundled\ffplay.exe" Condition="Exists('..\bundled\ffplay.exe')" CopyToOutputDirectory="PreserveNewest" Link="ffplay.exe" Visible="false" />
   </ItemGroup>
-
-  <Target Name="CheckBundledDeps" AfterTargets="Build">
-    <Warning Condition="!Exists('$(OutputPath)yt-dlp.exe')" Text="yt-dlp.exe not found in output! Run: .\scripts\Download-BundledDeps.ps1" />
-    <Warning Condition="!Exists('$(OutputPath)ffmpeg.exe')" Text="FFmpeg not found in output! Run: .\scripts\Download-BundledDeps.ps1" />
-  </Target>
 
 </Project>

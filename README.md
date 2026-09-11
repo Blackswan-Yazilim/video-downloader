@@ -21,7 +21,7 @@
 ## ✨ What's New in v2.0.0
 
 ### 🚀 Modern WebView2 & Tailwind Architecture
-- **Complete UI Redesign:** Replaced legacy Windows Forms controls with high-performance Microsoft Edge WebView2, Tailwind CSS, and custom glassmorphism components.
+- **Complete UI Redesign:** Rebuilt from scratch with Microsoft Edge WebView2, Tailwind CSS, and custom glassmorphism components.
 - **Dynamic Themes:** Smooth Dark, Light, and High Contrast theme toggling.
 - **Full Localization:** Instant bilingual support (Turkish & English) with persistent settings.
 - **Active Download Manager:** Real-time progress bars, speed, ETA, and completed download history tracking.
@@ -51,9 +51,6 @@ Download the latest `VideoDownloader-2.0.0-Setup.msi` installer from the [Releas
 # Clone repository
 git clone https://github.com/Blackswan-Yazilim/video-downloader.git
 cd video-downloader
-
-# Download bundled yt-dlp and FFmpeg binaries
-.\scripts\Download-BundledDeps.ps1
 
 # Build solution in Release configuration
 dotnet build VideoDownloader.sln -c Release
