@@ -14,7 +14,7 @@ namespace VideoDownloader
 
         public WebForm()
         {
-            Text = "Video Downloader v2.0";
+            Text = "Video Downloader v2.0.1";
             ClientSize = new System.Drawing.Size(1280, 760);
             MinimumSize = new System.Drawing.Size(1000, 660);
             FormBorderStyle = FormBorderStyle.Sizable;
@@ -56,6 +56,14 @@ namespace VideoDownloader
             {
                 await _webView.EnsureCoreWebView2Async(null);
             }
+
+            if (_webView.CoreWebView2 != null)
+            {
+                _webView.CoreWebView2.Settings.IsStatusBarEnabled = false;
+                _webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
+                _webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+            }
+
             _bridge.SetWebView(_webView);
 
             _webView.CoreWebView2.DOMContentLoaded += async (s, e) =>

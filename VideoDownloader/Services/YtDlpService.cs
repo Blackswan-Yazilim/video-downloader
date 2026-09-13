@@ -74,15 +74,18 @@ namespace VideoDownloader.Services
                     using var process = new Process { StartInfo = startInfo };
                     process.Start();
 
-                    var output = process.StandardOutput.ReadToEnd();
+                    var outputTask = process.StandardOutput.ReadToEndAsync();
+                    var errorTask = process.StandardError.ReadToEndAsync();
                     if (!process.WaitForExit(AppConstants.MetadataTimeoutMs))
                     {
-                        // Timeout — kill the process to avoid zombie
+                        // Timeout - kill the process to avoid zombie
                         try { process.Kill(entireProcessTree: true); } catch { }
                         return null;
                     }
 
                     if (token.IsCancellationRequested) return null;
+
+                    var output = outputTask.GetAwaiter().GetResult();
 
                     if (!string.IsNullOrEmpty(output))
                     {
@@ -272,10 +275,20 @@ namespace VideoDownloader.Services
 
             OutputReceived?.Invoke(data);
 
-            // Destination / start indication
-            if (data.Contains("[download] Destination", StringComparison.OrdinalIgnoreCase))
+            // Initial connecting / extractor progress
+            if (data.Contains("Extracting URL", StringComparison.OrdinalIgnoreCase) ||
+                data.Contains("Downloading webpage", StringComparison.OrdinalIgnoreCase) ||
+                data.Contains("Downloading initial data", StringComparison.OrdinalIgnoreCase) ||
+                data.Contains("Downloading player", StringComparison.OrdinalIgnoreCase) ||
+                data.Contains("Downloading visionos player", StringComparison.OrdinalIgnoreCase) ||
+                data.Contains("Downloading m3u8", StringComparison.OrdinalIgnoreCase))
             {
-                ProgressChanged?.Invoke(0.5, "Downloading");
+                ProgressChanged?.Invoke(0.5, "Connecting");
+            }
+            // Destination / start indication
+            else if (data.Contains("[download] Destination", StringComparison.OrdinalIgnoreCase))
+            {
+                ProgressChanged?.Invoke(1.0, "Downloading");
             }
             else if (data.Contains("[Merger]", StringComparison.OrdinalIgnoreCase) || data.Contains("Merging formats", StringComparison.OrdinalIgnoreCase))
             {

@@ -56,7 +56,7 @@ namespace VideoDownloader
                     _webView.CoreWebView2.ExecuteScriptAsync(
                         ok
                             ? "if(window._onDownloadDone)window._onDownloadDone(true)"
-                            : $"var al=document.getElementById('activeList');if(al&&al.children.length>0){{var it=al.children[0];var st=it.querySelector('.font-label-sm');if(st){{st.textContent='{safeMsg}';st.classList.add('text-error')}};setTimeout(function(){{if(window._onDownloadDone)window._onDownloadDone(false)}},5000)}}");
+                            : $"if(window._onDownloadDone)window._onDownloadDone(false,'{safeMsg}')");
                 }));
             };
 
@@ -224,7 +224,17 @@ namespace VideoDownloader
 
         private async Task StartDownloadAsync(string url, string path, string quality, bool subtitles)
         {
-            if (!await _downloadLock.WaitAsync(0)) return;
+            if (!await _downloadLock.WaitAsync(0))
+            {
+                if (_form != null && !_form.IsDisposed)
+                {
+                    _form.BeginInvoke((Action)(() =>
+                    {
+                        _webView?.CoreWebView2?.ExecuteScriptAsync("if(window._onDownloadBusy)window._onDownloadBusy();");
+                    }));
+                }
+                return;
+            }
             try
             {
                 // Resolve to absolute path — use MyVideos as base for relative paths
